@@ -1,0 +1,192 @@
+% 
+\documentclass[a4paper]{article}
+\usepackage[OT1]{fontenc}
+\usepackage{longtable}
+\usepackage{geometry}
+\usepackage{Sweave}
+\geometry{left=1.25in, right=1.25in, top=1in, bottom=1in}
+\listfiles
+\pagestyle{myheadings}
+\markright{World Cup 2006}
+\begin{document}
+
+\title{worldcupgraphs.Rnw}
+\author{gb02413}
+
+\maketitle
+<<label=start, echo=FALSE, include=FALSE>>=
+startt<-proc.time()[3]
+library(psych)
+library(xtable)
+library(plyr)
+library(ggplot2)
+options(width=80)
+
+
+#' Function to Sort a dataframe with a given list of columns
+#' Cribbed from Spector, P. (2008). "Data Manipulation with R", UseR! Springer. Pg78
+#' @param df Dataframe to be sorted
+#' @param ... list of columns to sort on
+#' @returnType 
+#' @return A sorted dataframe
+#' @author "Paul Hurley"
+#' @export
+#' @
+#' @usage with(dataframe,sortframe(dataframe,column1, column2, column3))
+#' @examples with(iris,sortframe(iris,Sepal.Length,Sepal.Width,Petal.Length))
+sortframe<-function(df,...){df[do.call(order,list(...)),]}
+
+#Load Example Data
+world.cup.2006<-read.csv("worldcup2006.csv")
+
+world.cup.2006$Timen<-as.numeric(str_extract(as.character(world.cup.2006$Time)," [0-9]*"))
+
+teamgoals<-ddply(subset(world.cup.2006,!is.na(Team)),.(Team),nrow)
+
+top5<-subset(world.cup.2006,Team %in% (with(teamgoals,sortframe(teamgoals,-V1))$Team[1:5]))
+
+top5$Team<-factor(top5$Team)
+
+firstgoal<-ddply(world.cup.2006,.(match),function(df) {
+			with(df,sortframe(df,Timen))
+			return(df[1,])
+		})
+
+#write.csv(firstgoal,"firstgoals.csv")
+
+top5firstgoal<-ddply(top5,.(match),function(df) {
+			with(df,sortframe(df,Timen))
+			return(df[1,])
+		})
+
+#write.csv(top5firstgoal,"top5firstgoal")
+@ 
+\tableofcontents
+\section{Introduction}
+This document contains an analysis of the goals scored during the 2006 FIFA football world cup.
+
+The collected data (listed in Appendix 1) contains details of the \Sexpr{nrow(world.cup.2006)} goals 
+scored during the World cup by the \Sexpr{length(levels(world.cup.2006$Team))} teams.
+
+This document was created automatically on \today, with \Sexpr{print(version$version.string)} running
+ on a \Sexpr{print(version$platform)} platform using sweave.
+
+\newpage
+\section{Some Tables}
+The First Goal scored in each match
+\scriptsize
+<<label=First Goal, results=tex, echo=FALSE>>=
+	print(xtable(firstgoal),tabular.environment='longtable',
+			latex.environments=c("center"), floating=FALSE, include.rownames=FALSE)
+@ 
+\normalsize
+The Top 5 Scoring teams
+\scriptsize
+<<label=Top Scorers, results=tex, echo=FALSE>>=
+	print(xtable(top5),tabular.environment='longtable',
+			latex.environments=c("center"), floating=FALSE, include.rownames=FALSE)
+@ 
+\normalsize
+\section{Lots of Graphs}
+
+<<label=rawdataplot1,include=FALSE, echo=FALSE>>=
+	print(qplot(Timen,data=firstgoal, geom="histogram", binwidth=1)+
+					opts(title = "Histogram of Time of First Goal Scored, binwidth = 1")+
+					labs(x="Time", y="Frequency")+opts(plot.title=theme_text(size=10))+
+					opts(axis.text.x=theme_text(size=10))+opts(axis.title.x=theme_text(size=8))+
+					opts(axis.text.y=theme_text(size=10))+opts(axis.title.y=theme_text(size=8, angle=90)))
+@ 
+\begin{figure}[h]
+\begin{center}
+<<label=fig1,fig=TRUE,echo=FALSE>>=
+<<rawdataplot1>>
+@ 
+\end{center}
+\caption{Histogram of Time of First Goal Scored, binwidth = 1}
+\label{fig:one}
+\end{figure}
+<<label=rawdataplot2,fig=TRUE, echo=FALSE>>=
+	print(qplot(Timen,data=firstgoal, geom="histogram", binwidth=5)+
+					opts(title = "Log PAR against Log Nominal")+
+					labs(x="log(Concentration) ng/mL", y="log(PAR)")+opts(plot.title=theme_text(size=10))+
+					opts(axis.text.x=theme_text(size=10))+opts(axis.title.x=theme_text(size=8))+
+					opts(axis.text.y=theme_text(size=10))+opts(axis.title.y=theme_text(size=8, angle=90)))
+@ 
+<<label=rawdataplot3,fig=TRUE, echo=FALSE>>=
+		print(qplot(Timen,data=firstgoal, geom="histogram", binwidth=10)+
+						opts(title = "Log PAR against Log Nominal")+
+						labs(x="log(Concentration) ng/mL", y="log(PAR)")+opts(plot.title=theme_text(size=10))+
+						opts(axis.text.x=theme_text(size=10))+opts(axis.title.x=theme_text(size=8))+
+						opts(axis.text.y=theme_text(size=10))+opts(axis.title.y=theme_text(size=8, angle=90)))
+@ 
+<<label=rawdataplot4,fig=TRUE, echo=FALSE>>=
+		print(ggplot(firstgoal,aes(Timen, fill=Team))+geom_density(alpha=0.2)+
+						opts(title = "Log PAR against Log Nominal")+
+						labs(x="log(Concentration) ng/mL", y="log(PAR)")+opts(plot.title=theme_text(size=10))+
+						opts(axis.text.x=theme_text(size=10))+opts(axis.title.x=theme_text(size=8))+
+						opts(axis.text.y=theme_text(size=10))+opts(axis.title.y=theme_text(size=8, angle=90)))
+@ 
+<<label=rawdataplot5,fig=TRUE, echo=FALSE>>=
+		print(qplot(factor(Team), Timen, data=firstgoal, geom="boxplot")+geom_jitter()+
+						opts(title = "Log PAR against Log Nominal")+
+						labs(x="log(Concentration) ng/mL", y="log(PAR)")+opts(plot.title=theme_text(size=10))+
+						opts(axis.text.x=theme_text(size=10))+opts(axis.title.x=theme_text(size=8))+
+						opts(axis.text.y=theme_text(size=10))+opts(axis.title.y=theme_text(size=8, angle=90)))
+@ 
+<<label=rawdataplot6,fig=TRUE, echo=FALSE>>=
+		print(qplot(factor(Team), Timen, data=world.cup.2006, geom="boxplot")+geom_jitter()+
+						opts(title = "Log PAR against Log Nominal")+
+						labs(x="log(Concentration) ng/mL", y="log(PAR)")+opts(plot.title=theme_text(size=10))+
+						opts(axis.text.x=theme_text(size=10))+opts(axis.title.x=theme_text(size=8))+
+						opts(axis.text.y=theme_text(size=10))+opts(axis.title.y=theme_text(size=8, angle=90)))
+@ 
+<<label=rawdataplot7,fig=TRUE, echo=FALSE>>=
+		print(qplot(Timen,data=top5firstgoal, geom="histogram", binwidth=1)+
+						opts(title = "Log PAR against Log Nominal")+
+						labs(x="log(Concentration) ng/mL", y="log(PAR)")+opts(plot.title=theme_text(size=10))+
+						opts(axis.text.x=theme_text(size=10))+opts(axis.title.x=theme_text(size=8))+
+						opts(axis.text.y=theme_text(size=10))+opts(axis.title.y=theme_text(size=8, angle=90)))
+@ 
+<<label=rawdataplot8,fig=TRUE, echo=FALSE>>=
+		print(qplot(Timen,data=top5firstgoal, geom="histogram", binwidth=5)+
+						opts(title = "Log PAR against Log Nominal")+
+						labs(x="log(Concentration) ng/mL", y="log(PAR)")+opts(plot.title=theme_text(size=10))+
+						opts(axis.text.x=theme_text(size=10))+opts(axis.title.x=theme_text(size=8))+
+						opts(axis.text.y=theme_text(size=10))+opts(axis.title.y=theme_text(size=8, angle=90)))
+@ 
+<<label=rawdataplot9,fig=TRUE, echo=FALSE>>=
+		print(ggplot(top5firstgoal,aes(Timen, fill=Team))+geom_density(alpha=0.2)+
+						opts(title = "Log PAR against Log Nominal")+
+						labs(x="log(Concentration) ng/mL", y="log(PAR)")+opts(plot.title=theme_text(size=10))+
+						opts(axis.text.x=theme_text(size=10))+opts(axis.title.x=theme_text(size=8))+
+						opts(axis.text.y=theme_text(size=10))+opts(axis.title.y=theme_text(size=8, angle=90)))
+@ 
+<<label=rawdataplot10,fig=TRUE, echo=FALSE>>=
+		print(qplot(factor(Team), Timen, data=top5firstgoal, geom="boxplot")+geom_jitter()+
+						opts(title = "Log PAR against Log Nominal")+
+						labs(x="log(Concentration) ng/mL", y="log(PAR)")+opts(plot.title=theme_text(size=10))+
+						opts(axis.text.x=theme_text(size=10))+opts(axis.title.x=theme_text(size=8))+
+						opts(axis.text.y=theme_text(size=10))+opts(axis.title.y=theme_text(size=8, angle=90)))
+@ 
+<<label=rawdataplot11,fig=TRUE, echo=FALSE>>=
+		print(qplot(factor(Team), Timen, data=top5, geom="boxplot")+geom_jitter()+
+						opts(title = "Log PAR against Log Nominal")+
+						labs(x="log(Concentration) ng/mL", y="log(PAR)")+opts(plot.title=theme_text(size=10))+
+						opts(axis.text.x=theme_text(size=10))+opts(axis.title.x=theme_text(size=8))+
+						opts(axis.text.y=theme_text(size=10))+opts(axis.title.y=theme_text(size=8, angle=90)))
+@ 
+\newpage
+\section{Appendix 1: Raw Data}
+Raw Data used in this Document
+\scriptsize
+<<label=Appendix1_Raw_Data, results=tex, echo=FALSE>>=
+	print(xtable(world.cup.2006),tabular.environment='longtable',
+			latex.environments=c("center"), floating=FALSE, include.rownames=FALSE)
+@ 
+\normalsize
+\newpage
+\section{Appendix 3: System Info}
+<<label=sessioninfo, results=TEX, echo=FALSE>>=
+	toLatex(sessionInfo())
+@ 
+\end{document}
