@@ -9,30 +9,6 @@ require(stringr)
 require(RCurl) 
 require(XML) 
 
-theURL <-"http://www.fifa.com/worldcup/archive/germany2006/results/matches/match=97410001/report.html"
-#x = tryCatch(getURLContent(theURL, verbose=TRUE, proxyuserpwd="gb02413:squeeze04$"),
-#		HTTPError = function(e) {
-#			cat("HTTP error: ", e$message, "\n")
-#		})
-
-webpage <- getURL(theURL, header=FALSE, verbose=TRUE) 
-
-webpagecont <- readLines(tc <- textConnection(webpage)); close(tc)  
-
-pagetree <- htmlTreeParse(webpagecont, error=function(...){}, useInternalNodes = FALSE) 
-
-idmainContent<-xpathApply(pagetree,"//*/div[@id='mainContent']",xmlValue)
-#idmainContent=" 2006 FIFA World Cup Germany    Group matches Germany - Costa Rica4:2 (2:1)MatchDateVenue / StadiumTimeAttendance109 June 2006 Munich  / Allianz Arena18:0066000Goals scoredPhilipp LAHM (GER) 6', Paulo WANCHOPE (CRC) 12', Miroslav KLOSE (GER) 17', Miroslav KLOSE (GER) 61', Paulo WANCHOPE (CRC) 73', Torsten FRINGS (GER) 87'Germany Line-up [1] Jens LEHMANN (GK)    [3] Arne FRIEDRICH    [7] Bastian SCHWEINSTEIGER    [8] Torsten FRINGS    [11] Miroslav KLOSE   (-79') [16] Philipp LAHM    [17] Per MERTESACKER    [18] Tim BOROWSKI   (-72') [19] Bernd SCHNEIDER (C)   (-91') [20] Lukas PODOLSKI    [21] Christoph METZELDER    Substitute(s) [12] O..."
-
-theURL <-"http://www.fifa.com/worldcup/archive/germany2006/results/matches/match=97410057/report.html"
-webpage <- getURL(theURL, header=FALSE, verbose=TRUE) 
-webpagecont <- readLines(tc <- textConnection(webpage)); close(tc)  
-
-pagetree <- htmlTreeParse(webpage, error=function(...){}, useInternalNodes = TRUE) 
-
-idmainContent<-xpathSApply(pagetree,"//*/div[@id='mainContent']",xmlValue)
-
-
 #' Function to Sort a dataframe with a given list of columns
 #' Cribbed from Spector, P. (2008). "Data Manipulation with R", UseR! Springer. Pg78
 #' @param df Dataframe to be sorted

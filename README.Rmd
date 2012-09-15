@@ -9,7 +9,7 @@ games to produce stats of team scores.
 Used as a topic dataset for a UK Maths school lesson
 
 ```{r}
-#source("/home/paul/workspace/world_cup/R/1_getData.R")
+source("/home/paul/workspace/world_cup/R/1_getData.R")
 source("/home/paul/workspace/world_cup/R/2_processData.R")
 source("/home/paul/workspace/world_cup/R/3_producePlots.R")
 ```
