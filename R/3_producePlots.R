@@ -14,7 +14,7 @@ firstgoal<-read.csv(file=paste(datadir, "firstgoals.csv", sep=""))
 top5firstgoal<-read.csv(file=paste(datadir, "top5firstgoal.csv", sep=""))
 top5<-read.csv(file=paste(datadir, "top5.csv", sep=""))
 
-qplot(Timen,data=firstgoal, geom="histogram", binwidth=1)
+print(qplot(Timen,data=firstgoal, geom="histogram", binwidth=1))
 qplot(Timen,data=firstgoal, geom="histogram", binwidth=5)
 qplot(Timen,data=firstgoal, geom="histogram", binwidth=10)
 
